@@ -2,6 +2,25 @@ const csv = require('csvtojson');
 const UserData = require('../models/userDataModel.js');
 const asyncError = require('../middlewares/asyncError.js');
 const { ErrorHandler } = require('../utils/customError.js');
+const { baseHtml } = require('../utils/unsubscribePage.js');
+
+
+const arrUpdateAndStrConcate = (jsonObj, userInfo, defaultUsers, incompleteInfoError) => {
+    for (var i = 0; i < jsonObj.length; i++) {
+        if (jsonObj[i].Name !== '' && jsonObj[i].Email !== '') {
+            var obj = {};
+            obj.name = jsonObj[i].Name;
+            obj.email = jsonObj[i].Email;
+            obj.city = jsonObj[i].City == '' ? 'N/A' : jsonObj[i].City;
+            userInfo.push(obj);
+
+        } else if (jsonObj[i].Name === '' || jsonObj[i].Email === '' || jsonObj[i].City === '') {
+            defaultUsers.push(jsonObj[i]);      // collecting default users info to send in response
+            incompleteInfoError += ` ${i + 2},`;
+        }
+    }
+    incompleteInfoError += " in CSV file couldn't be added due to incomplete user information";
+}
 
 
 const uploadCSV = asyncError(async (req, res, next) => {
@@ -11,20 +30,7 @@ const uploadCSV = asyncError(async (req, res, next) => {
     const defaultUsers = [];    // array of users with incomplete information only
     var incompleteInfoError = "Row No."
 
-    for (var i = 0; i < jsonObj.length; i++) {
-        if (jsonObj[i].Name !== '' && jsonObj[i].Email !== '') {
-            var obj = {};
-            obj.name = jsonObj[i].Name;
-            obj.email = jsonObj[i].Email;
-            obj.city = jsonObj[i].City == '' ? 'N/A' : jsonObj[i].City;
-            userInfo.push(obj);
-        
-        } else if (jsonObj[i].Name === '' || jsonObj[i].Email === '' || jsonObj[i].City === '') {
-            defaultUsers.push(jsonObj[i]);      // collecting default users info to send in response
-            incompleteInfoError += ` ${i + 2},`;
-        }
-    }
-    incompleteInfoError += " in CSV file couldn't be added due to incomplete user information";
+    arrUpdateAndStrConcate(jsonObj, userInfo, defaultUsers, incompleteInfoError);
 
     const old_documents = await UserData.countDocuments();
 
@@ -62,4 +68,20 @@ const uploadCSV = asyncError(async (req, res, next) => {
     }
 })
 
-module.exports = { uploadCSV };
+
+const changeSubscribedStatus = asyncError(async (req, res, next) => {      
+    const { id } = req.params;
+    const user = await UserData.findById(id);
+
+    if (!user) return next(new ErrorHandler("User not found", 404));
+
+    user.subscribed = !user.subscribed;
+    await user.save();
+
+    const dynamicHtml = baseHtml.replace('User', user.name);  // Replace placeholder in template with user name
+
+    res.setHeader('Content-Type', 'text/html');  
+    res.send(dynamicHtml);
+})
+
+module.exports = { uploadCSV, changeSubscribedStatus };
