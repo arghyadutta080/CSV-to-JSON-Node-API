@@ -7,9 +7,9 @@ const { ErrorHandler } = require('../utils/customError.js');
 const uploadCSV = asyncError(async (req, res, next) => {
     const jsonObj = await csv().fromFile(req.file.path);    // converting csv data into array of objects
     const userInfo = [];
-    
+
     const defaultUsers = [];    // array of users with incomplete information only
-    var incompleteInfoError = "Entry ID No."
+    var incompleteInfoError = "Row No."
 
     for (var i = 0; i < jsonObj.length; i++) {
         if (jsonObj[i].Name !== '' && jsonObj[i].Email !== '') {
@@ -18,12 +18,13 @@ const uploadCSV = asyncError(async (req, res, next) => {
             obj.email = jsonObj[i].Email;
             obj.city = jsonObj[i].City == '' ? 'N/A' : jsonObj[i].City;
             userInfo.push(obj);
-        } else if (jsonObj[i].No != '') {
+        
+        } else if (jsonObj[i].Name === '' || jsonObj[i].Email === '' || jsonObj[i].City === '') {
             defaultUsers.push(jsonObj[i]);      // collecting default users info to send in response
-            incompleteInfoError += ` ${jsonObj[i].No}`;
+            incompleteInfoError += ` ${i + 2},`;
         }
     }
-    incompleteInfoError += " couldn't be added due to incomplete user information"
+    incompleteInfoError += " in CSV file couldn't be added due to incomplete user information";
 
     const old_documents = await UserData.countDocuments();
 
