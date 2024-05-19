@@ -12,9 +12,8 @@ const arrUpdateAndStrConcate = async (mode, jsonObj, userInfo, defaultUsers, inc
             var obj = {};
             obj.name = jsonObj[i].name;
             obj.email = jsonObj[i].email;
-            obj.city = jsonObj[i].city == '' ? 'N/A' : jsonObj[i].city;
+            obj.city = jsonObj[i].city == '' ? 'city_name' : jsonObj[i].city;
 
-            // console.log(jsonObj);
             userInfo.push(obj);
 
         } else if (jsonObj[i].name === '' || jsonObj[i].email === '' || jsonObj[i].city === '') {
@@ -58,17 +57,17 @@ const handleMultipleDocInsertion = async (userInfo, defaultUsers, incompleteInfo
         const data = await UserData.insertMany(userInfo, { ordered: false });
         const new_documents = await UserData.countDocuments();
         const new_user_count = new_documents - old_documents
-        default_users = [title, ...default_users];
-        await updateCSV(default_users);
+        const non_added_users = [title, ...default_users];
+        await updateCSV(non_added_users);
+
         res.setHeader('Content-Type', 'application/json');
         res.status(200).json({
             success: true,
             message: new_user_count > 0 ? "Data Successfully Uploaded!" : 'There is no data to upload!',
             defaultUsersInfo: defaultUsers.length > 0 ? incompleteInfoError : 'Count 0',
-            uploaded_documents: data,
             new_user_count,
             default_user_count: defaultUsers.length,        
-            non_added_user_data: `/api/v1/download-csv`,    // no duplicate entry inside try block, only for default users
+            non_added_user_data: `http://localhost:5001/api/v1/download-csv`,    // no duplicate entry inside try block, only for default users
             total_user_in_db: new_documents,
         });
     }
@@ -78,15 +77,18 @@ const handleMultipleDocInsertion = async (userInfo, defaultUsers, incompleteInfo
             const new_user_count = all_documents - old_documents
             const duplicate_users = handleDublicates(error.writeErrors);
             const non_added_users = [title, ...duplicate_users, ...default_users]
+            
             await updateCSV(non_added_users);
+            
             res.setHeader('Content-Type', 'application/json');
             res.status(400).json({
                 success: new_user_count > 0 ? true : false,
                 defaultUsersInfo: defaultUsers.length > 0 ? incompleteInfoError : 'Count 0',
                 message: 'Duplicate Entry! Similar document already available in database',
                 new_user_count,
+                default_user_count: defaultUsers.length, 
                 duplicate_user_count: userInfo.length - new_user_count,
-                non_added_user_data: `/api/v1/download-csv`,
+                non_added_user_data: `http://localhost:5001/api/v1/download-csv`,
                 total_user_in_db: all_documents,
             })
         }
@@ -98,6 +100,7 @@ const uploadCSV = asyncError(async (req, res, next) => {
     const jsonObj = await csv().fromFile(req.file.path);    // converting csv data into array of objects
 
     // console.log('csvData', jsonObj);
+    
     const userInfo = [];
 
     const defaultUsers = [];    // array of users with incomplete information only
@@ -115,11 +118,13 @@ const uploadCSV = asyncError(async (req, res, next) => {
 
 const addNewUsersManually = asyncError(async (req, res, next) => {
     const { users } = req.body;
+    
     // console.log('users: ', users);
+    
     const userInfo = [];
 
     const defaultUsers = [];    // array of users with incomplete information only
-    var incompleteInfoError = "Data entry No."
+    var incompleteInfoError = "Data entry No.(index + 1):"
 
     const mode = "manual";
 
