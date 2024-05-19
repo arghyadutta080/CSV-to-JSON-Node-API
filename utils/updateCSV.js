@@ -11,7 +11,7 @@ const updateCSV = async (linesExceptFirst) => {
     // ['Arghya', 'arghyadutta080', 'Kolkata', 'Dublicate Entry\r'],
     // ['Marko', 'mark909', 'Mumbai', 'Dublicate Entry\r'],
     let linesArr = linesExceptFirst.map(line => line.split(','));
-    console.log(linesArr)
+    // console.log(linesArr)
 
     // Join then into a string with new lines
     // Arghya, arghyadutta080, Kolkata, Dublicate Entry
@@ -20,7 +20,7 @@ const updateCSV = async (linesExceptFirst) => {
         return line;
     }).join("\n");
 
-    console.log('output', output)
+    // console.log('output', output)
 
     // update out csv file with error reportings
     fs.writeFileSync('./uploads/UserData.csv', output);

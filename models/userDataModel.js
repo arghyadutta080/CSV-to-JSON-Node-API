@@ -14,7 +14,7 @@ const userDataSchema = new mongoose.Schema({
     },
     city: {
         type: String,
-        default: 'N/A',
+        default: 'city_name',
         trim: true
     },
     subscribed: {

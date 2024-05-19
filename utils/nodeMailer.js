@@ -34,10 +34,10 @@ const sendEmailToSubscribers = async (user, receivers, non_receivers) => {
     try {
         const info = await transporter.sendMail(options);
         receivers.push(info.accepted[0]);
-        console.log('info: ', info);
+        // console.log('info: ', info);
     } catch (error) {
         non_receivers.push(user.email);
-        console.log({ error });
+        // console.log({ error });
     }
 };
 
