@@ -40,6 +40,11 @@ connectDB();
 //     }
 // }));
 
+
+app.get('/', (req, res) => {
+    res.send('Server is running');
+});
+
 // routing middleware
 app.use(manageUserRouter);
 
