@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
 
 const sendEmailToSubscribers = async (user, receivers, non_receivers) => {
     // const unsubscribed_proxy_url = 'http://localhost:3000/unsubscribe/${user._id}'       // clientsite proxy url
-    const Unsubscribe_url = `http://localhost:5001/api/v1/unsubscribe/${user._id}`;
+    const Unsubscribe_url = `http://13.233.195.207:5001/api/v1/unsubscribe/${user._id}`;
 
     const options = {
         from: {
