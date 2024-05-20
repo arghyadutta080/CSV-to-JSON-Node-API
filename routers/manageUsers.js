@@ -13,6 +13,6 @@ manageUserRouter.get('/api/v1/download-csv', getCSVDownloadURL);
 
 // user e-maling management
 manageUserRouter.get('/api/v1/sendmail', sendEmail);
-manageUserRouter.put('/api/v1/unsubscribe/:id', changeSubscribedStatus);
+manageUserRouter.get('/api/v1/unsubscribe/:id', changeSubscribedStatus);
 
 module.exports = { manageUserRouter }; 
