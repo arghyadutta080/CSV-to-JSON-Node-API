@@ -1,0 +1,6 @@
+name,email,city,error
+Jane Smith,jane.smith@example.com,London,Dublicate Entry
+Markas Smith,markas@gmail.com,city_name,Dublicate Entry
+Mark,mark@gmail.com,city_name,Dublicate Entry
+Mike Jones,,Paris,Default/Incomplete Entry
+John Doe,,New York,Default/Incomplete Entry
